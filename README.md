@@ -2,12 +2,12 @@
 # nvidia_isaac-sim_ros2_docker
 Run NVIDIA Isaac Sim in a Docker container with ROS2 Humble and ROS2 bridge already set up.
 
-I work with Ubuntu 24.04.1 LTS and I found that NVIDIA Isaac Sim isn't running on it yet. Thus, I had to dockerize it over ubuntu 22.04. Furthermore, I wanted to build an image with ROS2 Humble installed too, as the ROS2 bridge for Isaac Sim.
+I work with Ubuntu 24.04.1 LTS and I found that NVIDIA Isaac Sim isn't running on it yet. Thus, I had to dockerize it over an ubuntu 22.04 image. Furthermore, I wanted to build an image with ROS2 Humble installed and the ROS2 bridge for Isaac Sim too.
 
-Consequently, I write the Dockerfile in this repository. I hope it helps you! 
+Consequently, I share the Dockerfile in this repository. I hope it helps you!
 
-In order to build the image, you can either follow the steps manually or run the bash script ``build.sh``.<br>
-In order to run the container, you can run it manually as shown below or run the bash script ``run.sh``.
+In order to build the image, you can either follow the steps manually or run the bash script ``build.sh``. Make sure to meet all the prerrequisites.<br>
+In order to run the container, you can run it manually as shown below or run the bash script ``run.sh``.<br>
 
 # Specifications
 This repository has been run with the following specifications:
@@ -19,7 +19,67 @@ Graphics card: ``NVIDIA GeForce RTX 4060 Laptop GPU``<br>
 Graphics card memory: ``8 GB``<br>
 Needed disk space: ``22 GB``<br>
 
-It should work in previous releases as 20.04 and 22.04.
+*It should work in previous releases as 20.04 and 22.04.
+
+# Prerequisites
+- NVIDIA Drivers installation: https://ubuntu.com/server/docs/nvidia-drivers-installation<br>
+GPU drivers version must be 535.129.03 or later, check it with:
+```bash
+nvidia-smi
+```
+
+- Docker installation and executing without sudo:
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+```bash
+# Post-install steps for Docker
+sudo groupadd docker # Create group
+sudo usermod -aG docker $USER # Add current user to docker group
+newgrp docker # Log in docker group
+```
+```bash
+#Verify Docker installation
+docker run hello-world
+```
+
+- NVIDIA Container Toolkit installation:
+```bash
+# Configure the repository
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+  && \
+    sudo apt-get update
+
+# Install the NVIDIA Container Toolkit packages
+sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+
+# Configure the container runtime
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+
+# Verify NVIDIA Container Toolkit
+docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+```
+
+- Generate NGC API Key: https://docs.nvidia.com/ngc/ngc-overview/index.html#generating-api-key
+- Log in to NGC:
+```bash
+docker login nvcr.io
+```
+```bash
+Username: $oauthtoken
+Password: <Your NGC API Key>
+WARNING! Your password will be stored unencrypted in /home/username/.docker/config.json.
+Configure a credential helper to remove this warning. See
+credentials-store
+Login Succeeded
+```
+
 
 # Isaac Sim version
 ``4.2.0``
@@ -86,11 +146,13 @@ REMEMBER: if you want to share a folder between the host and the container, moun
 
 # Run Isaac Sim inside the container
 If this command is included when running the container, ROS2 bridge will fail. That's because the container with ROS2 packages must be started first, and then Isaac Sim.
+Once the container is running, type next line in the container:
 ```bash
 ./runapp.sh
 ```
+Wait until Isaac Sim is completely loaded. Ignore "not responding" messages, it will take some time, so be patient ;).
 
-# Build with bash scripts
+# Build and run with bash scripts
 Add execution permissions:
 ```bash
 chmod u+x build.sh run.sh
@@ -110,5 +172,7 @@ Run:
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_container.html
 
 https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/Documentation/Isaac-Sim-Docs_2022.2.1/isaacsim/latest/install_ros.html
+
+https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim
 
 https://github.com/NVIDIA-Omniverse/IsaacSim-dockerfiles
