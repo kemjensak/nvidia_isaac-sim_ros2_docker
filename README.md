@@ -90,6 +90,22 @@ If this command is included when running the container, ROS2 bridge will fail. T
 ./runapp.sh
 ```
 
+# Build with bash scripts
+Add execution permissions:
+```bash
+chmod u+x build.sh run.sh
+```
+
+Build:
+```bash
+./build.sh
+```
+
+Run:
+```bash
+./run.sh
+```
+
 # Bibliography
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_container.html
 
