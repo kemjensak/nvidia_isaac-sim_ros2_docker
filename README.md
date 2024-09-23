@@ -10,7 +10,7 @@ In order to build the image, you can either follow the steps manually or run the
 In order to run the container, you can run it manually as shown below or run the bash script ``run.sh``.<br>
 
 # Specifications
-This repository has been run with the following specifications:
+This repository has been run with the following host specifications:
 
 OS: ``Ubuntu 24.04.1 LTS``*<br>
 RAM: ``32 GB``<br>
