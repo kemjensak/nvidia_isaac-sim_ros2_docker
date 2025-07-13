@@ -1,5 +1,5 @@
 # Base image
-FROM nvcr.io/nvidia/isaac-sim:4.2.0
+FROM nvcr.io/nvidia/isaac-sim:4.5.0
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -32,9 +32,13 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | a
 
 RUN sh -c 'echo "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
 
+RUN apt-get update && apt-get install -y --allow-downgrades libbrotli1=1.0.9-2build6
+
 RUN apt-get update && apt-get install -y ros-humble-desktop
 
 RUN apt-get clean
+
+RUN /isaac-sim/python.sh -m pip install netifaces
 
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -59,6 +63,12 @@ VOLUME ["/isaac-sim/kit/cache", "/root/.cache/ov", "/root/.cache/pip", "/root/.c
 # Source ROS2
 SHELL ["/bin/bash", "-c"]
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+# Add fastDDS.xml configuration file
+COPY fastDDS.xml /root/fastDDS.xml
+
+# Set FASTRTPS_DEFAULT_PROFILES_FILE environment variable
+RUN echo "export FASTRTPS_DEFAULT_PROFILES_FILE='/root/fastDDS.xml'" >> ~/.bashrc
 
 # README!: the statements below, especially the second one, should run Isaac Sim every time the container is initialized. However, it does not work.
 # Command to run Isaac Sim in headless mode
